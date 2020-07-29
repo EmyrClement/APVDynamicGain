@@ -1,0 +1,176 @@
+import ROOT as r
+from plotStyle import *
+from tools import *
+from collections import OrderedDict
+r.gROOT.SetBatch(1)
+SetPlotStyle()
+r.TH1F.AddDirectory(0)
+r.gROOT.ProcessLine("gErrorIgnoreLevel = 9999;")
+import os
+if not os.path.exists('clusterProfiles'):
+    os.makedirs('clusterProfiles')
+
+cmsText     = "CMS";
+cmsTextFont   = 61  
+cmsTextSize      = 1#0.75
+extraText   = "Preliminary"
+extraTextFont = 52 
+sqrtsText = '13 TeV'
+
+# 2016 pre VFP change
+dataFill = 1 # Label for all fills in dataset, not actually Fill 1
+year = 2016
+
+dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+
+# Which taus to plot
+# -1 is for no APV simulation
+# 0 is for best choice of tau for each layer, with possiblydifferent tau for each layer
+taus = [ -1, 0 ]
+
+fileNames = OrderedDict([
+	('Data' , dataFileName)
+])
+
+if -1 in taus:
+	fileNames['Default MC'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
+	taus.remove(-1)
+
+for tau in taus: fileNames['#tau = {tau}#mus'.format(tau=tau)] = 'landau_Sim_{year}_{fill}_{tau}us_newCharge.root'.format(year = year, fill = dataFill, tau = tau)
+
+if 0 in taus:
+	fileNames['With APV dynamic gain'] = fileNames['#tau = 0#mus']
+	del fileNames['#tau = 0#mus']
+
+niceColourList = [1, 9, 414, 633, 618]
+if not 'Data' in fileNames.keys():
+	print ('Must have a data file, going to crash')
+
+
+plotName = 'demo/nClusters_Vs_TruePU'
+
+layers = [
+'TIB1','TIB2','TIB3','TIB4',
+'TOB1','TOB2','TOB3',
+'TOB4','TOB5','TOB6',
+'TID1','TID2','TID3',
+'TEC1','TEC2','TEC3',
+'TEC4','TEC5','TEC6',
+'TEC7','TEC8','TEC9',
+]
+
+
+normToOne = False
+rebinFactor = 1 # Tweaked later on for TIB/TOB
+
+dirName = plotName.split('/')[-1]
+profiles_y = {}
+
+profiles_perFile = {}
+profiles_inclusvePU_perFile = {}
+
+for counter, (label,fileName) in enumerate( fileNames.items() ):
+	inputFile = r.TFile(fileName)
+	profiles_perFile[label] = get1DProfiles( layers, inputFile, plotName, normFactor = 1, rebinFactor = 3 )
+
+dataProfiles = profiles_perFile['Data']
+
+puLabels = []
+
+for layer in layers:
+	can_profiles = r.TCanvas('can_proj_{label}'.format(label=dirName),'can_proj_{label}'.format(label=dirName),1200,900)
+
+	leg_profiles = r.TLegend(0.25, 0.5, 0.55, 0.9)
+	leg_profiles.SetHeader(layer,"C")
+	leg_profiles.SetBorderSize(0)
+	leg_profiles.SetFillStyle(0)
+
+	ratios = []
+	pad = can_profiles.cd( 1 )
+	r.gPad.Divide(2)
+	pad.cd(1).SetPad(0,0.4,1,1)
+	pad.cd(2).SetPad(0,0.05,1,0.4)
+	dataHist = dataProfiles[layer]
+		
+	if normToOne : dataHist.Scale( 1 / dataHist.Integral() )
+	dataHist.GetYaxis().SetTitle('Mean # clusters')
+	dataHist.GetYaxis().SetTitleSize( 0.1 )
+	dataHist.GetYaxis().SetTitleOffset( 0.6 )
+	dataHist.GetYaxis().SetLabelSize(0.08)
+	dataHist.GetXaxis().SetLabelSize(0.0)
+	dataHist.GetYaxis().SetNdivisions(403)
+	dataHist.SetMaximum( dataHist.GetMaximum()*1.5 )
+	dataHist.GetXaxis().SetRangeUser( 0, 50)
+
+	dataHist.SetMarkerStyle(8)
+	dataHist.SetMarkerColor(1)
+	dataHist.SetLineColor(1)
+	if counter == 0 : leg_profiles.AddEntry(dataHist,'Data','P')
+
+	drawOption = 'E'
+	dataHist.SetMaximum( dataHist.GetMaximum() * 1.5 )
+	p = pad.cd(1)
+	p.SetBottomMargin(0.05)
+	dataHist.Draw(drawOption)
+	drawOption = 'HIST'
+
+	isFirstHist = True
+	firstTRatioPlot = None
+	for simCounter, simLabel in enumerate( fileNames.keys() ):
+		if simLabel == 'Data' : continue
+		simHist = profiles_perFile[simLabel][layer]
+
+		simHist.Rebin( rebinFactor )
+
+		if normToOne : simHist.Scale( 1 / simHist.Integral() )
+		simHist.SetLineColor( niceColourList[ simCounter ] )
+
+		p = pad.cd(2)
+		p.SetBottomMargin(0.3)
+		p.SetTopMargin(0.05)
+
+		ratios.append( simHist.Clone() )
+		ratios[-1].GetXaxis().SetTitle('# Vertices')
+		ratios[-1].GetXaxis().SetLabelSize( 0.14 )
+		ratios[-1].GetXaxis().SetTitleSize( 0.15 )
+		ratios[-1].GetXaxis().SetTitleOffset( 0.8 )
+		ratios[-1].GetYaxis().SetTitle('Ratio to Data')
+		ratios[-1].GetYaxis().SetTitleSize( 0.15 )
+		ratios[-1].GetYaxis().SetTitleOffset( 0.35 )
+		ratios[-1].Divide( dataHist )
+		ratios[-1].GetYaxis().SetNdivisions(2,3,0)
+		ratios[-1].Draw(drawOption)
+		ratios[-1].GetYaxis().SetLabelSize(0.15)
+		ratios[-1].GetXaxis().SetRangeUser(0,50)
+		ratios[-1].SetMinimum(0.5)
+		ratios[-1].SetMaximum(1.5)
+
+
+		drawOption = 'HIST SAME'
+		leg_profiles.AddEntry(simHist,simLabel,'L')
+		pad.cd(1)
+		simHist.Draw(drawOption)
+	pad.cd(1)
+	dataHist.Draw('E SAME')
+
+
+
+	# Add CMS labels	
+	latex = r.TText(0.2, 0.8, cmsText)
+	latex.SetTextFont(cmsTextFont)
+	latex.SetTextAlign(11)
+	latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
+	latex.DrawTextNDC(0.2,0.88, cmsText)
+	latex.SetTextFont(extraTextFont)
+	latex.SetTextAlign(11)
+	latex.SetTextSize(0.76*cmsTextSize*pad.GetTopMargin())
+	latex.DrawTextNDC(0.2,0.88-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
+	pad.Update()
+
+	pad.cd(2).SetGridy()
+
+	can_profiles.cd( 1 )
+	leg_profiles.Draw()
+	can_profiles.Update()
+
+	can_profiles.Print("clusterProfiles/"+layer+".png");
