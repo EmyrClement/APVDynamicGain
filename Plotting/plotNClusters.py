@@ -16,6 +16,7 @@ cmsTextSize      = 1.75#0.75
 extraText   = "Preliminary"
 extraTextFont = 52 
 sqrtsText = '13 TeV'
+lumiText = '1.22 fb^{-1} (13 TeV)'
 
 # 2016 pre VFP change
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
@@ -55,13 +56,18 @@ pu_ranges = [ [ minPU + pu_range_width * a, minPU + pu_range_width * (a+1) ] for
 plotName = 'demo/nClusters_Vs_TruePU'
 
 layers = [
-'TIB1','TIB2','TIB3','TIB4',
-'TOB1','TOB2','TOB3',
-'TOB4','TOB5','TOB6',
-'TID1','TID2','TID3',
-'TEC1','TEC2','TEC3',
-'TEC4','TEC5','TEC6',
-'TEC7','TEC8','TEC9',
+# 'TIB1','TIB2','TIB3','TIB4',
+# 'TOB1','TOB2','TOB3',
+# 'TOB4','TOB5','TOB6',
+# 'TID1','TID2','TID3',
+# 'TEC1','TEC2','TEC3',
+# 'TEC4','TEC5','TEC6',
+# 'TEC7','TEC8','TEC9',
+
+'TIB1',
+'TOB1',
+'TID1',
+'TEC1'
 ]
 
 normToOne = True
@@ -103,7 +109,7 @@ for layer in layers:
 	can_projections = r.TCanvas('can_proj_{label}'.format(label=dirName),'can_proj_{label}'.format(label=dirName),900,900)
 	can_projections.DivideSquare( len( pu_ranges ) + 1 )
 	leg_projections = r.TLegend(0.1, 0.1, 0.9, 0.9)
-	leg_projections.SetHeader(layer,"C")
+	leg_projections.SetHeader("Layer : "+layer,"C")
 
 	ratios = []
 	for counter, pu_range in enumerate( pu_ranges ) :
@@ -139,12 +145,13 @@ for layer in layers:
 		dataHist.SetMarkerStyle(8)
 		dataHist.SetMarkerColor(1)
 		dataHist.SetLineColor(1)
-		if counter == 0 : leg_projections.AddEntry(dataHist,'Data','P')
+		if counter == 0 : leg_projections.AddEntry(dataHist,'Data','PL')
 
 		drawOption = 'E'
 		dataHist.SetMaximum( dataHist.GetMaximum() * 1.5 )
 		p = pad.cd(1)
 		p.SetBottomMargin(0.05)
+		p.SetTopMargin(1.3)
 		dataHist.Draw(drawOption)
 		drawOption = 'HIST'
 
@@ -188,16 +195,23 @@ for layer in layers:
 		dataHist.Draw('E SAME')
 
 		# Add CMS labels	
-		latex = r.TText(0.2, 0.8, cmsText)
+		latex = r.TLatex(0.2, 0.8, cmsText)
 		latex.SetTextFont(cmsTextFont)
 		latex.SetTextAlign(11)
 		latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
-		latex.DrawTextNDC(0.2,0.84, cmsText)
+		latex.DrawTextNDC(0.2,0.8, cmsText)
 		latex.SetTextFont(extraTextFont)
 		latex.SetTextAlign(11)
 		latex.SetTextSize(0.76*cmsTextSize*pad.GetTopMargin())
-		latex.DrawTextNDC(0.2,0.84-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
-		pad.Update()
+		latex.DrawTextNDC(0.2,0.8-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
+
+		# Lumi text
+		latex.SetTextAlign(31)
+		latex.SetTextFont(42)
+		# latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
+		latex.SetTextSize(0.07)
+		# latex.DrawTextNDC(1-pad.GetRightMargin(),1-cmsTextSize*pad.GetTopMargin(), lumiText)
+		latex.DrawLatexNDC(1-pad.GetRightMargin(),0.93, lumiText)
 
 		puLabels[counter].Draw()
 
@@ -207,5 +221,6 @@ for layer in layers:
 	leg_projections.Draw()
 	can_projections.Update()
 
+	can_projections.Print("clusterMultiplicity/"+layer+".pdf");
 	can_projections.Print("clusterMultiplicity/"+layer+".png");
 

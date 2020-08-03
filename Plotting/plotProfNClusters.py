@@ -12,10 +12,11 @@ if not os.path.exists('clusterProfiles'):
 
 cmsText     = "CMS";
 cmsTextFont   = 61  
-cmsTextSize      = 1#0.75
+cmsTextSize      = 0.75
 extraText   = "Preliminary"
 extraTextFont = 52 
 sqrtsText = '13 TeV'
+lumiText = '1.22 fb^{-1} (13 TeV)'
 
 # 2016 pre VFP change
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
@@ -50,13 +51,18 @@ if not 'Data' in fileNames.keys():
 plotName = 'demo/nClusters_Vs_TruePU'
 
 layers = [
-'TIB1','TIB2','TIB3','TIB4',
-'TOB1','TOB2','TOB3',
-'TOB4','TOB5','TOB6',
-'TID1','TID2','TID3',
-'TEC1','TEC2','TEC3',
-'TEC4','TEC5','TEC6',
-'TEC7','TEC8','TEC9',
+# 'TIB1','TIB2','TIB3','TIB4',
+# 'TOB1','TOB2','TOB3',
+# 'TOB4','TOB5','TOB6',
+# 'TID1','TID2','TID3',
+# 'TEC1','TEC2','TEC3',
+# 'TEC4','TEC5','TEC6',
+# 'TEC7','TEC8','TEC9',
+
+'TIB1',
+'TOB1',
+'TID1',
+'TEC1'
 ]
 
 
@@ -79,9 +85,13 @@ puLabels = []
 
 for layer in layers:
 	can_profiles = r.TCanvas('can_proj_{label}'.format(label=dirName),'can_proj_{label}'.format(label=dirName),1200,900)
-
-	leg_profiles = r.TLegend(0.25, 0.5, 0.55, 0.9)
-	leg_profiles.SetHeader(layer,"C")
+	can_profiles.SetTopMargin(0.1)
+	can_profiles.SetFillColor(0)
+	can_profiles.SetBorderMode(0)
+	can_profiles.SetFrameFillStyle(0)
+	can_profiles.SetFrameBorderMode(0)
+	leg_profiles = r.TLegend(0.35, 0.52, 0.63, 0.88)
+	leg_profiles.SetHeader("Layer : "+layer,"C")
 	leg_profiles.SetBorderSize(0)
 	leg_profiles.SetFillStyle(0)
 
@@ -89,9 +99,12 @@ for layer in layers:
 	pad = can_profiles.cd( 1 )
 	r.gPad.Divide(2)
 	pad.cd(1).SetPad(0,0.4,1,1)
+	pad.cd(1).SetTopMargin(1.5)
 	pad.cd(2).SetPad(0,0.05,1,0.4)
 	dataHist = dataProfiles[layer]
-		
+	leg_profiles.AddEntry(dataHist,'Data','PL')
+
+
 	if normToOne : dataHist.Scale( 1 / dataHist.Integral() )
 	dataHist.GetYaxis().SetTitle('Mean # clusters')
 	dataHist.GetYaxis().SetTitleSize( 0.1 )
@@ -99,12 +112,13 @@ for layer in layers:
 	dataHist.GetYaxis().SetLabelSize(0.08)
 	dataHist.GetXaxis().SetLabelSize(0.0)
 	dataHist.GetYaxis().SetNdivisions(403)
-	dataHist.SetMaximum( dataHist.GetMaximum()*1.5 )
+	dataHist.SetMaximum( dataHist.GetMaximum()*1.8 )
 	dataHist.GetXaxis().SetRangeUser( 0, 50)
 
 	dataHist.SetMarkerStyle(8)
 	dataHist.SetMarkerColor(1)
 	dataHist.SetLineColor(1)
+	dataHist.SetLineWidth(3)
 	if counter == 0 : leg_profiles.AddEntry(dataHist,'Data','P')
 
 	drawOption = 'E'
@@ -124,6 +138,7 @@ for layer in layers:
 
 		if normToOne : simHist.Scale( 1 / simHist.Integral() )
 		simHist.SetLineColor( niceColourList[ simCounter ] )
+		simHist.SetLineWidth(3)
 
 		p = pad.cd(2)
 		p.SetBottomMargin(0.3)
@@ -156,21 +171,29 @@ for layer in layers:
 
 
 	# Add CMS labels	
-	latex = r.TText(0.2, 0.8, cmsText)
+	latex = r.TLatex(0.2, 0.8, cmsText)
 	latex.SetTextFont(cmsTextFont)
 	latex.SetTextAlign(11)
-	latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
-	latex.DrawTextNDC(0.2,0.88, cmsText)
+	latex.SetTextSize(0.76*cmsTextSize*pad.GetTopMargin())
+	latex.DrawTextNDC(0.2,0.8, cmsText)
 	latex.SetTextFont(extraTextFont)
 	latex.SetTextAlign(11)
 	latex.SetTextSize(0.76*cmsTextSize*pad.GetTopMargin())
-	latex.DrawTextNDC(0.2,0.88-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
-	pad.Update()
+	latex.DrawTextNDC(0.2,0.8-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
+	# pad.Update()
 
+	# Lumi text
+	latex.SetTextAlign(31)
+	latex.SetTextFont(42)
+	# latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
+	latex.SetTextSize(0.07)
+	# latex.DrawTextNDC(1-pad.GetRightMargin(),1-cmsTextSize*pad.GetTopMargin(), lumiText)
+	latex.DrawLatexNDC(1-pad.GetRightMargin(),0.92, lumiText)
 	pad.cd(2).SetGridy()
 
 	can_profiles.cd( 1 )
 	leg_profiles.Draw()
 	can_profiles.Update()
-
+	# input('...')
+	can_profiles.Print("clusterProfiles/"+layer+".pdf");
 	can_profiles.Print("clusterProfiles/"+layer+".png");
