@@ -16,7 +16,7 @@ cmsTextSize      = 0.75
 extraText   = "Preliminary"
 extraTextFont = 52 
 sqrtsText = '13 TeV'
-lumiText = '1.22 fb^{-1} (13 TeV)'
+lumiText = '0.44 fb^{-1} (13 TeV)'
 
 # 2016 pre VFP change
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1

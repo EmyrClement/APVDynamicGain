@@ -16,6 +16,7 @@ cmsTextSize      = 1#0.75
 extraText   = "Preliminary"
 extraTextFont = 52 
 sqrtsText = '13 TeV'
+lumiText = '0.44 fb^{-1} (13 TeV)'
 
 # 2016 pre VFP change
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
@@ -222,8 +223,10 @@ for layer in layers:
 	ratios = []
 	for counter, pu_range in enumerate( pu_ranges ) :
 		pad = can_projections.cd( counter + 1 )
+		# can_projections.SetTopMargin(0.1)
 		r.gPad.Divide(2)
 		pad.cd(1).SetPad(0,0.4,1,1)
+		pad.cd(1).SetTopMargin(1.)
 		pad.cd(2).SetPad(0,0.05,1,0.4)
 
 		pu_range_label = getPURangeLabel( pu_range )
@@ -231,9 +234,9 @@ for layer in layers:
 		if normToOne : dataHist.Scale( 1 / dataHist.Integral() )
 
 		dataHist.GetYaxis().SetTitle('Fraction of clusters')
-		dataHist.GetYaxis().SetTitleSize( 0.1 )
-		dataHist.GetYaxis().SetTitleOffset( 0.65 )
-		dataHist.GetYaxis().SetLabelSize(0.08)
+		dataHist.GetYaxis().SetTitleSize( 0.08 )
+		dataHist.GetYaxis().SetTitleOffset( 0.9 )
+		dataHist.GetYaxis().SetLabelSize(0.07)
 		dataHist.GetXaxis().SetLabelSize(0.0)
 		dataHist.GetYaxis().SetNdivisions(4,4,0)
 
@@ -243,7 +246,7 @@ for layer in layers:
 		if counter == 0 : leg_projections.AddEntry(dataHist,'Data (old APV settings)','P')
 
 		drawOption = 'E'
-		dataHist.SetMaximum( dataHist.GetMaximum() * 1.5 )
+		dataHist.SetMaximum( dataHist.GetMaximum() * 1.6 )
 		p = pad.cd(1)
 		p.SetBottomMargin(0.05)
 		p.SetRightMargin(0.12)
@@ -268,13 +271,13 @@ for layer in layers:
 			p.SetRightMargin(0.12)
 			ratios.append( simHist.Clone() )
 			ratios[-1].GetXaxis().SetTitle('# electrons')
-			ratios[-1].GetXaxis().SetLabelSize( 0.14 )
-			ratios[-1].GetXaxis().SetTitleSize( 0.15 )
-			ratios[-1].GetXaxis().SetTitleOffset( 0.8 )
+			ratios[-1].GetXaxis().SetLabelSize( 0.1 )
+			ratios[-1].GetXaxis().SetTitleSize( 0.1 )
+			ratios[-1].GetXaxis().SetTitleOffset( 0.9 )
 			ratios[-1].GetYaxis().SetTitle('Ratio to Data')
-			ratios[-1].GetYaxis().SetTitleSize( 0.45 )
-			ratios[-1].GetYaxis().SetTitleOffset( 0.3 )
-			ratios[-1].GetYaxis().SetLabelSize( 0.15 )
+			ratios[-1].GetYaxis().SetTitleSize( 0.1 )
+			ratios[-1].GetYaxis().SetTitleOffset( 0.5 )
+			ratios[-1].GetYaxis().SetLabelSize( 0.1 )
 			ratios[-1].Divide( dataHist )
 			ratios[-1].GetYaxis().SetNdivisions(2)
 			ratios[-1].Draw(drawOption)
@@ -290,16 +293,25 @@ for layer in layers:
 		dataHist.Draw('E SAME')
 
 		# Add CMS labels	
-		latex = r.TText(0.2, 0.8, cmsText)
+		latex = r.TLatex(0.2, 0.8, cmsText)
 		latex.SetTextFont(cmsTextFont)
 		latex.SetTextAlign(11)
 		latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
-		latex.DrawTextNDC(0.2,0.88, cmsText)
+		latex.DrawTextNDC(0.2,0.83, cmsText)
 		latex.SetTextFont(extraTextFont)
 		latex.SetTextAlign(11)
 		latex.SetTextSize(0.76*cmsTextSize*pad.GetTopMargin())
-		latex.DrawTextNDC(0.2,0.88-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
+		latex.DrawTextNDC(0.2,0.83-1.2*cmsTextSize*pad.GetTopMargin(), extraText)
 		pad.Update()
+
+
+		# Lumi text
+		latex.SetTextAlign(31)
+		latex.SetTextFont(42)
+		# latex.SetTextSize(cmsTextSize*pad.GetTopMargin())
+		latex.SetTextSize(0.05)
+		# latex.DrawTextNDC(1-pad.GetRightMargin(),1-cmsTextSize*pad.GetTopMargin(), lumiText)
+		latex.DrawLatexNDC(1-pad.GetRightMargin()-0.06,0.93, lumiText)
 
 		pad.cd(2).SetGridy()
 

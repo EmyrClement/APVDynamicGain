@@ -16,7 +16,7 @@ cmsTextSize      = 1.75#0.75
 extraText   = "Preliminary"
 extraTextFont = 52 
 sqrtsText = '13 TeV'
-lumiText = '1.22 fb^{-1} (13 TeV)'
+lumiText = '0.44 fb^{-1} (13 TeV)'
 
 # 2016 pre VFP change
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
@@ -138,7 +138,7 @@ for layer in layers:
 		if normToOne : dataHist.Scale( 1 / dataHist.Integral() )
 		dataHist.GetYaxis().SetTitle('Fraction of events')
 		dataHist.GetYaxis().SetTitleSize( 0.1 )
-		dataHist.GetYaxis().SetTitleOffset( 0.5 )
+		dataHist.GetYaxis().SetTitleOffset( 0.65 )
 		dataHist.GetYaxis().SetLabelSize(0.08)
 		dataHist.GetXaxis().SetLabelSize(0.0)
 		dataHist.GetYaxis().SetNdivisions(403)
@@ -151,7 +151,7 @@ for layer in layers:
 			rebinFactor = 6+0
 		else: 
 			rebinFactor = 10+0
-		print ('Rebin :',layer,pu_range,dataHist.GetBinCenter( lastNonZeroBin ),rebinFactor)
+
 		dataHist.Rebin( rebinFactor )
 		lastNonZeroBin = dataHist.FindLastBinAbove(0)
 		dataHist.GetXaxis().SetRange( 1, lastNonZeroBin + 1)
@@ -190,7 +190,7 @@ for layer in layers:
 			ratios[-1].GetXaxis().SetTitleOffset( 0.8 )
 			ratios[-1].GetYaxis().SetTitle('Ratio to Data')
 			ratios[-1].GetYaxis().SetTitleSize( 0.15 )
-			ratios[-1].GetYaxis().SetTitleOffset( 0.3 )
+			ratios[-1].GetYaxis().SetTitleOffset( 0.35 )
 			ratios[-1].Divide( dataHist )
 			ratios[-1].GetYaxis().SetNdivisions(2)
 			ratios[-1].Draw(drawOption)
