@@ -22,19 +22,20 @@ lumiText = '1.22 fb^{-1} (13 TeV)'
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
 year = 2016
 
-dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+# dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+dataFileName = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Data.root'
 
 # Which taus to plot
 # -1 is for no APV simulation
 # 0 is for best choice of tau for each layer, with possiblydifferent tau for each layer
-taus = [ -1, 0 ]
+taus = [ -1 ]
 
 fileNames = OrderedDict([
 	('Data' , dataFileName)
 ])
 
 if -1 in taus:
-	fileNames['Default MC'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
+	fileNames['MC EOY'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
 	taus.remove(-1)
 
 for tau in taus: fileNames['#tau = {tau}#mus'.format(tau=tau)] = 'landau_Sim_{year}_{fill}_{tau}us_newCharge.root'.format(year = year, fill = dataFill, tau = tau)
@@ -47,6 +48,7 @@ niceColourList = [1, 9, 414, 633, 618]
 if not 'Data' in fileNames.keys():
 	print ('Must have a data file, going to crash')
 
+fileNames['MC (with APV simulation)'] = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Sim.root'
 
 plotName = 'demo/nClusters_Vs_TruePU'
 
@@ -102,7 +104,7 @@ for layer in layers:
 	pad.cd(1).SetTopMargin(1.5)
 	pad.cd(2).SetPad(0,0.05,1,0.4)
 	dataHist = dataProfiles[layer]
-	leg_profiles.AddEntry(dataHist,'Data','PL')
+	leg_profiles.AddEntry(dataHist,'Data (old APV settings)','PL')
 
 
 	if normToOne : dataHist.Scale( 1 / dataHist.Integral() )
@@ -113,7 +115,7 @@ for layer in layers:
 	dataHist.GetXaxis().SetLabelSize(0.0)
 	dataHist.GetYaxis().SetNdivisions(403)
 	dataHist.SetMaximum( dataHist.GetMaximum()*1.8 )
-	dataHist.GetXaxis().SetRangeUser( 0, 50)
+	dataHist.GetXaxis().SetRangeUser( 0, 45 )
 
 	dataHist.SetMarkerStyle(8)
 	dataHist.SetMarkerColor(1)
@@ -126,7 +128,7 @@ for layer in layers:
 	p = pad.cd(1)
 	p.SetBottomMargin(0.05)
 	dataHist.Draw(drawOption)
-	drawOption = 'HIST'
+	drawOption = 'HIST ]['
 
 	isFirstHist = True
 	firstTRatioPlot = None
@@ -156,12 +158,12 @@ for layer in layers:
 		ratios[-1].GetYaxis().SetNdivisions(2,3,0)
 		ratios[-1].Draw(drawOption)
 		ratios[-1].GetYaxis().SetLabelSize(0.15)
-		ratios[-1].GetXaxis().SetRangeUser(0,50)
+		ratios[-1].GetXaxis().SetRangeUser(0,45)
 		ratios[-1].SetMinimum(0.5)
 		ratios[-1].SetMaximum(1.5)
 
 
-		drawOption = 'HIST SAME'
+		drawOption = 'HIST SAME ]['
 		leg_profiles.AddEntry(simHist,simLabel,'L')
 		pad.cd(1)
 		simHist.Draw(drawOption)

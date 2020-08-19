@@ -21,19 +21,20 @@ sqrtsText = '13 TeV'
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
 year = 2016
 
-dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+# dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+dataFileName = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Data.root'
 
 # Which taus to plot
 # -1 is for no APV simulation
 # 0 is for best choice of tau for each layer, with possiblydifferent tau for each layer
-taus = [ -1, 0 ]
+taus = [ -1 ]
 
 fileNames = OrderedDict([
 	('Data' , dataFileName)
 ])
 
 if -1 in taus:
-	fileNames['Default MC'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
+	fileNames['MC EOY'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
 	taus.remove(-1)
 
 
@@ -47,9 +48,11 @@ niceColourList = [1, 9, 414, 633, 618]
 if not 'Data' in fileNames.keys():
 	print ('Must have a data file, going to crash')
 
+fileNames['MC (with APV simulation)'] = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Sim.root'
+
 puRangeCalib = [0,50]
-pu_range_width = 50
-minPU = 0
+pu_range_width = 40
+minPU = 10
 maxPU = 50
 pu_ranges = [ [ minPU + pu_range_width * a, minPU + pu_range_width * (a+1) ] for a in range(0, int( (maxPU-minPU)/pu_range_width) )]
 
@@ -61,13 +64,18 @@ plotName = 'demo/ClusterCharge_Vs_TruePU'
 afterG2 = 'afterG2' in plotName
 
 layers = [
-'TIB1','TIB2','TIB3','TIB4',
-'TOB1','TOB2','TOB3',
-'TOB4','TOB5','TOB6',
-'TID1','TID2','TID3',
-'TEC1','TEC2','TEC3',
-'TEC4','TEC5','TEC6',
-'TEC7','TEC8','TEC9',
+# 'TIB1','TIB2','TIB3','TIB4',
+# 'TOB1','TOB2','TOB3',
+# 'TOB4','TOB5','TOB6',
+# 'TID1','TID2','TID3',
+# 'TEC1','TEC2','TEC3',
+# 'TEC4','TEC5','TEC6',
+# 'TEC7','TEC8','TEC9',
+
+'TIB1',
+'TOB1',
+'TID1',
+'TEC1'
 ]
 
 normToOne = True
@@ -165,8 +173,8 @@ for counter, (label,fileName) in enumerate( fileNames.items() ):
 		if not afterG2:
 			dataMPV = mpvs['Data'][layer]
 			simMPV = mpvs[label][layer]
-			calibMPV = dataMPV/simMPV
-			# calibMPV = 1 # uncomment to disable calibration
+			# calibMPV = dataMPV/simMPV
+			calibMPV = 1 # uncomment to disable calibration
 
 
 		for pu_range in pu_ranges:
@@ -232,7 +240,7 @@ for layer in layers:
 		dataHist.SetMarkerStyle(8)
 		dataHist.SetMarkerColor(1)
 		dataHist.SetLineColor(1)
-		if counter == 0 : leg_projections.AddEntry(dataHist,'Data','P')
+		if counter == 0 : leg_projections.AddEntry(dataHist,'Data (old APV settings)','P')
 
 		drawOption = 'E'
 		dataHist.SetMaximum( dataHist.GetMaximum() * 1.5 )

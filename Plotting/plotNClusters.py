@@ -22,19 +22,20 @@ lumiText = '1.22 fb^{-1} (13 TeV)'
 dataFill = 1 # Label for all fills in dataset, not actually Fill 1
 year = 2016
 
-dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
-
+# dataFileName = 'landau_Data_Fill{fill}.root'.format( fill = dataFill )
+dataFileName = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Data.root'
 
 # Which taus to plot
 # -1 is for no APV simulation
 # 0 is for best choice of tau for each layer, with possiblydifferent tau for each layer
-taus = [ -1, 0 ]
+# taus = [ -1, 0 ]
+taus = [ -1 ]
 fileNames = OrderedDict([
 	('Data' , dataFileName)
 ])
 
 if -1 in taus:
-	fileNames['Default MC'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
+	fileNames['MC EOY'] = 'landau_Sim_{year}_{fill}_default.root'.format(year = year, fill = dataFill)
 	taus.remove(-1)
 
 for tau in taus: fileNames['#tau = {tau}#mus'.format(tau=tau)] = 'landau_Sim_{year}_{fill}_{tau}us_newCharge.root'.format(year = year, fill = dataFill, tau = tau)
@@ -43,15 +44,28 @@ if 0 in taus:
 	fileNames['With APV dynamic gain'] = fileNames['#tau = 0#mus']
 	del fileNames['#tau = 0#mus']
 
+fileNames['MC (with APV simulation)'] = '/Users/ec6821/Documents/sc01/HIP/CMSSW_10_6_12/src/APVDynamicGain/ChargeAna/python/landau_Sim.root'
+
 niceColourList = [1, 9, 414, 633, 618]
 if not 'Data' in fileNames.keys():
 	print ('Must have a data file, going to crash')
 
-pu_range_width = 10
-minPU = 10
-maxPU = 50
-pu_ranges = [ [ minPU + pu_range_width * a, minPU + pu_range_width * (a+1) ] for a in range(0, int( (maxPU-minPU)/pu_range_width) )]
+# pu_range_width = 10
+# minPU = 10
+# maxPU = 50
+# pu_ranges = [ [ minPU + pu_range_width * a, minPU + pu_range_width * (a+1) ] for a in range(0, int( (maxPU-minPU)/pu_range_width) )]
+pu_ranges = [
+	[10,25],
+	[25,35],
+	[35,40]
+]
 
+# pu_ranges = [
+# 	[10,50]
+# ]
+
+
+print (pu_ranges)
 
 plotName = 'demo/nClusters_Vs_TruePU'
 
@@ -132,12 +146,12 @@ for layer in layers:
 		dataHist.GetXaxis().SetRange( 1, lastNonZeroBin + 1)
 
 		if dataHist.GetBinCenter( lastNonZeroBin ) < 200 : 
-			rebinFactor = 2+0
-		elif dataHist.GetBinCenter( lastNonZeroBin ) < 400 : 
 			rebinFactor = 4+0
+		elif dataHist.GetBinCenter( lastNonZeroBin ) < 400 : 
+			rebinFactor = 6+0
 		else: 
-			rebinFactor = 8+0
-
+			rebinFactor = 10+0
+		print ('Rebin :',layer,pu_range,dataHist.GetBinCenter( lastNonZeroBin ),rebinFactor)
 		dataHist.Rebin( rebinFactor )
 		lastNonZeroBin = dataHist.FindLastBinAbove(0)
 		dataHist.GetXaxis().SetRange( 1, lastNonZeroBin + 1)
@@ -145,7 +159,7 @@ for layer in layers:
 		dataHist.SetMarkerStyle(8)
 		dataHist.SetMarkerColor(1)
 		dataHist.SetLineColor(1)
-		if counter == 0 : leg_projections.AddEntry(dataHist,'Data','PL')
+		if counter == 0 : leg_projections.AddEntry(dataHist,'Data (old APV settings)','PL')
 
 		drawOption = 'E'
 		dataHist.SetMaximum( dataHist.GetMaximum() * 1.5 )
@@ -160,7 +174,6 @@ for layer in layers:
 		for simCounter, simLabel in enumerate( fileNames.keys() ):
 			if simLabel == 'Data' : continue
 			simHist = projections_perFile[simLabel][layer][pu_range_label]
-
 			simHist.Rebin( rebinFactor )
 
 			if normToOne : simHist.Scale( 1 / simHist.Integral() )
